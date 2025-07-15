@@ -1,5 +1,5 @@
 # Interpersonal conflicts social media use and depression study: a 15-year prospective cohort study
-This repository provides the necessary codes for reproducing the results presented in the study.  For information on	submitting a request for data access, please visit https://www.familycohort.sph.hku.hk/database.
+This repository provides the core code for analyses in the study.  For information on	submitting a request for data access, please visit https://www.familycohort.sph.hku.hk/database.
 ## Folder structure
    * ### Descriptives of media exposure to sociopolitical news
    `Descriptives_of media_exposure.R` - Main analysis for descriptives of media exposure during major protests
