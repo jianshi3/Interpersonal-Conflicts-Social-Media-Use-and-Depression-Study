@@ -1,4 +1,4 @@
-# Interpersonal Conflicts Social Media Use and Depression Study
+# Interpersonal Conflicts Social Media Use and Depression Study: a 15-year Prospective Cohort Study
 This repository provides the necessary codes for reproducing the results presented in the study.  For information on	submitting a request for data access, please visit https://www.familycohort.sph.hku.hk/database.
 ## Folder structure
    * ### Weighted prevalence of interpersonal conflict levels
