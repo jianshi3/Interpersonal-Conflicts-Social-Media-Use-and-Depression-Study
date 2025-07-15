@@ -9,7 +9,7 @@ This repository provides the necessary codes for reproducing the results present
    `Short_Mid_term_impacts_prob_dep.R` - Main analysis for analyzing short- and medium-term impact of conflicts on probable depression \
    `Short_Mid_term_impacts_dep_sym.R` - Main analysis for analyzing short- and medium-term impact of conflicts on depressive symptoms \
    `Cumulative_conflict_depression.sas` - Main analysis for analyzing impact of cumulative conflicts on probable depression using marginal structural model \
-   `Cumulative_conflict_depressive_symptoms.sas` - Main analysis for analyzing mpact of cumulative conflicts on depressive symptoms using marginal structural model  \
+   `Cumulative_conflict_depressive_symptoms.sas` - Main analysis for analyzing mpact of cumulative conflicts on depressive symptoms using marginal structural model  
    * ### Associations of media exposure to sociopolitcial news with interpersonal conflicts and depression
    `Media_exposure_ conflicts_depression.do` - Main analysis for analyzing associations of media exposure to sociopolitical news with interpersonal conflicts and depression
 
