@@ -9,8 +9,7 @@ rm(list = ls(all.names = TRUE))
 setwd("～/data/short_mid_term/")
 
 # Load data
-# SEP 2024 JS DATA
-data <- read.csv("for JS msm 1106.csv")
+data <- read.csv("msm 1106.csv")
 colnames(data)
 socio <- read.csv("demographic vars.csv")
 colnames(socio)
@@ -72,9 +71,9 @@ data <- merge(data, sp7[,1:2], by="member_id",all.x = TRUE)
 data <- merge(data, sp8[,1:2], by="member_id",all.x = TRUE)
 data <- merge(data, sp9[,1:2], by="member_id",all.x = TRUE)
 
-#### replace wave 11 with wave 14 (CS6), need to read CS6 outcomes Apr16-2025
+#### read CS6 outcomes Apr16-2025
 cs6 <- read_xlsx("cs6 with weights.xlsx")
-cs6clean <- read.dta13("C:/Users/roujia/Dropbox/CS manuscript/CS MH transfer/2_Data_CS_MH/Clean data/cs1_19_final2p1.dta")
+cs6clean <- read.dta13("~/data/cs1_19_final2p1.dta")
 cs6clean <- subset(cs6clean, cs6clean$wave==15)
 
 summary(cs6clean$phqtotal)
@@ -101,12 +100,7 @@ w9w14 <- unique(IDlist$member_id[IDlist$Wave=="oc9"|IDlist$Wave=="cs6"])
 #### Short-term and mid-term impact negative binomial regression with MI ####
 ##  adjusted for wave 2 sociodemographics, prior family apgar, prior  depressive symptoms, prior conflicts
 imp_mod_nb <- function(outcome,priordep,priorapgar,priorvar,variable,IDs,baseline) {
-  set.seed(23)
   varlist <- paste0(c('sex','age','emply2','marital','edulevel','hincome'),baseline)
-  for_imp <- data %>% filter(member_id %in% IDs) %>% select(varlist,priorapgar,priordep,priorvar,variable,outcome)
-  for_imp_mi <- mice(for_imp, m=100,  maxit = 50, seed = 500)
-  
-  # Fit negative binomial regression models for each variable
   fit_models <- with(data = for_imp_mi, expr = {
     MASS::glm.nb(as.formula(paste(outcome," ~ ",varlist[1]," +",varlist[2]," +",varlist[3]," +",varlist[4]," +",varlist[5]," +",varlist[6]," +",priorapgar, " +", priordep,"+", priorvar,"+",variable)))
   })
@@ -123,12 +117,7 @@ imp_mod_nb <- function(outcome,priordep,priorapgar,priorvar,variable,IDs,baselin
 
 # Other conflicts without prior
 imp_mod_oth_nb <- function(outcome,priordep,priorapgar,variable,IDs,baseline) {
-  set.seed(23)
   varlist <- paste0(c('sex','age','emply2','marital','edulevel','hincome'),baseline)
-  for_imp <- data %>% filter(member_id %in% IDs) %>% select(varlist,priorapgar,priordep,variable,outcome)
-  for_imp_mi <- mice(for_imp, m=100,  maxit = 50, seed = 500)
-  
-  # Fit negative binomial regression models for each variable
   fit_models <- with(data = for_imp_mi, expr = {
     MASS::glm.nb(as.formula(paste(outcome," ~ ",varlist[1]," +",varlist[2]," +",varlist[3]," +",varlist[4]," +",varlist[5]," +",varlist[6]," +",priorapgar, " +", priordep,"+",variable)))
   })
@@ -198,99 +187,4 @@ results_tbl_irr_st %>%
 
 
 
-#################################
-##### Complete case analysis ####
-cc_mod_nb <- function(outcome,priordep,priorapgar,priorvar,variable,IDs,baseline) {
-  varlist <- paste0(c('sex','age','emply2','marital','edulevel','hincome'),baseline)
-  data_sel <- data %>% filter(member_id %in% IDs) 
-  
-  # Fit negative binomial regression models for each variable
-  fit_models <- with(data = data_sel, expr = {
-    MASS::glm.nb(as.formula(paste(outcome," ~ ",varlist[1]," +",varlist[2]," +",varlist[3]," +",varlist[4]," +",varlist[5],
-                                  " +",varlist[6]," +",priorapgar, " +", priordep,"+", priorvar,"+",variable)))
-  })
-  
-  out <- summary(fit_models)[["coefficients"]] %>% data.frame()
-  out$ratio <- exp(out$Estimate)
-  out$LL <- exp(out$Estimate-qnorm(.975)*out$Std..Error)
-  out$UL <- exp(out$Estimate+qnorm(.975)*out$Std..Error)
-  out <- tibble::rownames_to_column(out, var="var")
-  out$outcome <- outcome
-  out$reg <- "complete_case"
-  out <- out[grepl(variable, out$var),c("ratio","LL","UL","var","outcome","reg")]
-  out
-}
 
-
-# conflicts without prior exposure measured (conffc & confst at early waves)
-cc_mod_oth_nb <- function(outcome,priordep,priorapgar,variable,IDs,baseline) {
-  varlist <- paste0(c('sex','age','emply2','marital','edulevel','hincome'),baseline)
-  data_sel <- data %>% filter(member_id %in% IDs) %>% select(varlist,priorapgar,priordep,variable,outcome)
-
-  # Fit negative binomial regression models for each variable
-  fit_models <- with(data = data_sel, expr = {
-    MASS::glm.nb(as.formula(paste(outcome," ~ ",varlist[1]," +",varlist[2]," +",varlist[3]," +",varlist[4]," +",varlist[5],
-                                  " +",varlist[6],"+",priorapgar, " +", priordep,"+",variable)))
-  })
-  
-  out <- summary(fit_models)[["coefficients"]] %>% data.frame()
-  out$ratio <- exp(out$Estimate)
-  out$LL <- exp(out$Estimate-qnorm(.975)*out$Std..Error)
-  out$UL <- exp(out$Estimate+qnorm(.975)*out$Std..Error)
-  out <- tibble::rownames_to_column(out, var="var")
-  out$outcome <- outcome
-  out$reg <- "complete_case"
-  out <- out[grepl(variable, out$var),c("ratio","LL","UL","var","outcome","reg")]
-  out
-}
-
-# Merge results IRR
-results_cc_irr <- rbind(
-  # cc_mod_nb('phq3','phq2','fapgar2',"polconf2",'polconf3',w3w3,'w2'),
-  # cc_mod_nb('phq4','phq2','fapgar2',"polconf2",'polconf3',w3w4,'w2'),
-  # cc_mod_nb('phq6','phq2','fapgar2',"polconf2",'polconf3',w3w6,'w2'),
-  # cc_mod_nb('phq4','phq3','fapgar3',"polconf3",'polconf4',w4w4,'w2'),
-  # cc_mod_nb('phq6','phq3','fapgar3',"polconf3",'polconf4',w4w6,'w2'),
-  # cc_mod_nb('phq8','phq7','fapgar7',"polconf7",'polconf8',w8w8,'w2'),
-  # cc_mod_nb('phq9','phq8','fapgar8',"polconf8",'polconf9',w9w9,'w2'),
-  # cc_mod_nb('phq9','phq7','fapgar7',"polconf7",'polconf8',w8w9,'w2'),
-  cc_mod_nb('phq14','phq7','fapgar7',"polconf7",'polconf8',w8w14,'w2'),
-  cc_mod_nb('phq14','phq8','fapgar8',"polconf8",'polconf9',w9w14,'w2')
-)
-
-results_cc_irr_fc <- rbind(
-  # cc_mod_oth_nb('phq3','phq2','fapgar2','polconffc3',w3w3,'w2'),
-  # cc_mod_oth_nb('phq4','phq2','fapgar2','polconffc3',w3w4,'w2'),
-  # cc_mod_oth_nb('phq6','phq2','fapgar2','polconffc3',w3w6,'w2'),
-  # cc_mod_nb('phq4','phq3','fapgar3',"polconffc3",'polconffc4',w4w4,'w2'),
-  # cc_mod_nb('phq6','phq3','fapgar3',"polconffc3",'polconffc4',w4w6,'w2'),
-  # cc_mod_nb('phq8','phq7','fapgar7',"polconffc7",'polconffc8',w8w8,'w2'),
-  # cc_mod_nb('phq9','phq8','fapgar8',"polconffc8",'polconffc9',w9w9,'w2'),
-  # cc_mod_nb('phq9','phq7','fapgar7',"polconffc7",'polconffc8',w8w9,'w2'),
-  cc_mod_nb('phq14','phq7','fapgar7',"polconffc7",'polconffc8',w8w14,'w2'),
-  cc_mod_nb('phq14','phq8','fapgar8',"polconffc8",'polconffc9',w9w14,'w2')
-)
-
-results_cc_irr_st <- rbind(
-  # cc_mod_oth_nb('phq3','phq2','fapgar2','polconfst3',w3w3,'w2'),
-  # cc_mod_oth_nb('phq4','phq2','fapgar2','polconfst3',w3w4,'w2'),
-  # cc_mod_oth_nb('phq6','phq2','fapgar2','polconfst3',w3w6,'w2'),
-  # cc_mod_nb('phq4','phq3','fapgar3',"polconfst3",'polconfst4',w4w4,'w2'),
-  # cc_mod_nb('phq6','phq3','fapgar3',"polconfst3",'polconfst4',w4w6,'w2'),
-  # cc_mod_nb('phq8','phq7','fapgar7',"polconfst7",'polconfst8',w8w8,'w2'),
-  # cc_mod_nb('phq9','phq8','fapgar8',"polconfst8",'polconfst9',w9w9,'w2'),
-  # cc_mod_nb('phq9','phq7','fapgar7',"polconfst7",'polconfst8',w8w9,'w2'),
-  cc_mod_nb('phq14','phq7','fapgar7',"polconfst7",'polconfst8',w8w14,'w2'),
-  cc_mod_nb('phq14','phq8','fapgar8',"polconfst8",'polconfst9',w9w14,'w2')
-)
-results_cc_irr %>%
-  mutate(adj_or = paste0(sprintf("%.2f",(round(ratio,2)))," (",sprintf("%.2f",round(LL,2)),", ",sprintf("%.2f",round(UL,2)),")")) #%>%
-  # write.csv(.,'Adjusted IRR_fam_cc.csv',row.names = F)
-
-results_cc_irr_fc %>%
-  mutate(adj_or = paste0(sprintf("%.2f",(round(ratio,2)))," (",sprintf("%.2f",round(LL,2)),", ",sprintf("%.2f",round(UL,2)),")"))# %>%
-  # write.csv(.,'Adjusted IRR_fc_cc.csv',row.names = F)
-
-results_cc_irr_st %>%
-  mutate(adj_or = paste0(sprintf("%.2f",(round(ratio,2)))," (",sprintf("%.2f",round(LL,2)),", ",sprintf("%.2f",round(UL,2)),")")) %>%
-  # write.csv(.,'Adjusted IRR_st_cc.csv',row.names = F)
