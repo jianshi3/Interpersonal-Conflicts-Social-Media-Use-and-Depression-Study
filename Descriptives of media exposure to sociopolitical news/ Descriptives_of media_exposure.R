@@ -4,8 +4,8 @@ library(survey)
 library(haven)
 library(kableExtra)
 
-setwd("SP conflict manuscript data")
-#sTable 11 Time spent on sociopolitical news via traditional and social media/online during the 2014 Occupy Central
+setwd("XX SP conflict manuscript data")
+#Time spent on sociopolitical news via traditional and social media/online during the 2014 Occupy Central
 #weights file
 sp_merged<-read_excel('wave 1 to cs19.xlsx')%>%rename(wave=Wave)
 #Wave 3
@@ -52,7 +52,7 @@ wtd_prev <- function(data,outcome){
   data.frame(est = est, ll = ll, ul = ul, prev = prev)
 }
 
-#sTable 11
+
 rbind(
   cbind( c("Wave 3","","",""),
          c("Overall","18-39","40-59","≥60"),
@@ -128,7 +128,7 @@ cbind( c("Wave 4","","",""),
   add_header_above(c(" " = 2, "Social media/online" = 2, "Television" = 2, "Newspapers/radio"=2))
 
 ####################################################################################################
-#sTable 12 Time spent on sociopolitical news via traditional and social media during the 2019 social unrest
+#Time spent on sociopolitical news via traditional and social media during the 2019 social unrest
 #Wave 8
 sp8_raw<-read_dta('Wave 8/sp8.dta')
 sp_merged8<-sp_merged%>%filter(wave=="oc8")
@@ -167,7 +167,7 @@ sp_merged9<-sp_merged9%>%mutate(newspaper_radio_cat=case_when(newspaper_radio<60
                                                               newspaper_radio>=60 ~ 1))
 sp_merged9<-sp_merged9%>%mutate(sm_cat=case_when(sm<60 ~ 0, 
                                                  sm>=60 ~ 1))
-#sTable 12
+
 rbind(
   cbind( c("Wave 8","","",""),
          c("Overall","18-39","40-59","≥60"),
@@ -243,7 +243,7 @@ rbind(
   add_header_above(c(" " = 2, "Social media/online" = 2, "Television" = 2, "Newspapers/radio"=2))
 
 ####################################################################################################
-#sTable 15. Proportion of posts of negative content on social media during 2019-20 social unrest
+# Proportion of posts of negative content on social media during 2019-20 social unrest
 #Wave 8
 sp_merged8<-sp_merged8%>%left_join(.,sp8_raw%>%select(member_id,sp1632_1),by="member_id")
 sp_merged8<-sp_merged8%>%mutate(sp1632_1=ifelse(sp1632_1>100,NA,sp1632_1))
@@ -251,7 +251,7 @@ sp_merged8<-sp_merged8%>%mutate(sp1632_1=ifelse(sp1632_1>100,NA,sp1632_1))
 sp_merged9<-sp_merged9%>%left_join(.,sp9_raw%>%select(member_id,sp1632_1),by="member_id")
 sp_merged9<-sp_merged9%>%mutate(sp1632_1=ifelse(sp1632_1>100,NA,sp1632_1))
 
-#sTable 15
+
 cbind(c("Overall","Age group (years)","18-39","40-59","≥60","Sex","Male","Female","Educational attainment",
         "Primary","Secondary","Tertiary"),
   
@@ -288,11 +288,11 @@ c((svyby(~sp1632_1, by = ~group, design = svydesign(ids = ~1, data = sp_merged9%
   add_header_above(c(" " = 1, "Prevalence (%) (95% CI)"=2))
 
 ####################################################################################################
-#sTable 16 Proportion of posts involving negative content on social media during the 2019 social unrest
+#Proportion of posts involving negative content on social media during the 2019 social unrest
 sp_merged9<-sp_merged9%>%left_join(.,sp9_raw%>%select(member_id,sp16222),by="member_id")
 sp_merged9<-sp_merged9%>%mutate(sp16222=ifelse(sp16222>100,NA,sp16222))
 
-#sTable 16
+
 cbind(c("Overall","Age group (years)","18-39","40-59","≥60"),
       
 c((svyby(~sp16222, by = ~group, design = svydesign(ids = ~1, data = sp_merged9%>%filter(!is.na(sp16222)), weights = ~weights), FUN = svymean)%>%data.frame()%>%
