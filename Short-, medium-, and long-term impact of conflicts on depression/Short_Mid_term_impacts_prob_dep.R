@@ -9,8 +9,7 @@ rm(list = ls(all.names = TRUE))
 setwd("～/data/short_mid_term/")
 
 # Load data
-# SEP 2024 JS DATA
-data <- read.csv("for JS msm 1106.csv")
+data <- read.csv("msm 1106.csv")
 colnames(data)
 socio <- read.csv("demographic vars.csv")
 colnames(socio)
@@ -105,11 +104,7 @@ data$phq10_yesno2 <- ifelse(is.na(data$phq2),NA, ifelse(data$phq2>9 ,1,0))
 #### Short-term and mid-term impact logistic regression with MI ####
 ##  adjusted for wave 2 sociodemographics, prior family apgar, prior  depressive symptoms, prior conflicts
 imp_mod_logi <- function(outcome,priordep,priorapgar,priorvar,variable,IDs,baseline) {
-  set.seed(23)
   varlist <- paste0(c('sex','age','emply2','marital','edulevel','hincome'),baseline)
-  for_imp <- data %>% filter(member_id %in% IDs) %>% select(varlist,priorapgar,priordep,priorvar,variable,outcome,"member_id")
-  for_imp_mi <- mice(for_imp, m=100,  maxit = 50, seed = 500)
-  
   fit_models <- with(data = for_imp_mi, expr = {
     glm(as.formula(paste(outcome," ~ ",varlist[1]," +",varlist[2]," +",varlist[3]," +",varlist[4]," +",varlist[5]," +",varlist[6]," +",priorapgar, " +", priordep,"+", priorvar,"+",variable)),family = binomial())
   })
@@ -126,11 +121,7 @@ imp_mod_logi <- function(outcome,priordep,priorapgar,priorvar,variable,IDs,basel
 
 # Other conflicts without prior
 imp_mod_oth_logi <- function(outcome,priordep,priorapgar,variable,IDs,baseline) {
-  set.seed(23)
   varlist <- paste0(c('sex','age','emply2','marital','edulevel','hincome'),baseline)
-  for_imp <- data %>% filter(member_id %in% IDs) %>% select(varlist,priorapgar,priordep,variable,outcome)
-  for_imp_mi <- mice(for_imp, m=100,  maxit = 50, seed = 500)
-
   fit_models <- with(data = for_imp_mi, expr = {
    glm(as.formula(paste(outcome," ~ ",varlist[1]," +",varlist[2]," +",varlist[3]," +",varlist[4]," +",varlist[5]," +",varlist[6]," +",priorapgar, " +", priordep,"+",variable)),family = binomial())
   })
